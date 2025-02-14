@@ -7,6 +7,18 @@ SESSION_NAME_FILE="$TMP_DIR/session_name.txt"
 FLOWTMUX_DIR="$HOME/.flowtmux/"
 LOG_FILE="$FLOWTMUX_DIR/log.txt"
 
+flow_read() {
+  status=$(get_status)
+  current_time=$(get_time)
+
+  if [ "$status" = "in_progress" ]; then
+    start_time=$(get_start_time)
+    elapsed=$(($current_time - $start_time))
+    printf "Timer: %s seconds" $elapsed
+  fi
+}
+
+
 flow_start() {
   rm -rf "$TMP_DIR"
   mkdir "$TMP_DIR"
@@ -52,7 +64,9 @@ main() {
   if [ "$cmd" = "start" ]; then
     flow_start $@
   elif [ "$cmd" = "pause" ]; then
-    flow_pause $@
+    flow_pause
+  elif [ "$cmd" = "read" ]; then
+    flow_read
   else
     echo "Unknown command $cmd"
   fi
