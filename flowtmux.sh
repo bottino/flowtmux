@@ -13,11 +13,26 @@ flow_read() {
 
   if [ "$status" = "in_progress" ]; then
     start_time=$(get_start_time)
-    elapsed=$(($current_time - $start_time))
-    printf "Timer: %s seconds" $elapsed
+    total_seconds=$(($current_time - $start_time))
+    printf "%sm" $((total_seconds / 60))
+  elif [ "$status" = "paused" ]; then
+    printf "paused"
   fi
 }
 
+flow_toggle() {
+  status=$(get_status)
+  if [ "$status" = "in_progress" ]; then
+    flow_pause
+    return 0
+  elif [ -z "$status" ] || [ "$status" = "paused" ]; then
+    flow_start "new session"
+    return 0
+  else
+    printf "Unknown status $status"
+    exit 1
+  fi
+}
 
 flow_start() {
   rm -rf "$TMP_DIR"
@@ -67,6 +82,8 @@ main() {
     flow_pause
   elif [ "$cmd" = "read" ]; then
     flow_read
+  elif [ "$cmd" = "toggle" ]; then
+    flow_toggle
   else
     echo "Unknown command $cmd"
   fi
