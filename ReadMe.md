@@ -1,6 +1,6 @@
 # flowtmux
 
-flotmux is a tmux helper for the FlowTime (or Flowmodoro) method. It's a variant
+flowtmux is a tmux helper for the FlowTime (or Flowmodoro) method. It's a variant
 of the pomodoro method designed to let the user reach a state of flow.
 
 ## Features (TODO)

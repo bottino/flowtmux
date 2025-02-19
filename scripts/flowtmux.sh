@@ -20,7 +20,7 @@ flow_read() {
   elif [ "$status" = "in_progress" ]; then
     start_time=$(get_start_time)
     total_seconds=$(($current_time - $start_time))
-    printf "⏱︎ %sm" $((total_seconds / 60))
+    printf "⏱︎%sm" $((total_seconds / 60))
 
   elif [ "$status" = "paused" ]; then
     printf "paused"
