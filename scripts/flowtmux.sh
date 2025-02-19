@@ -7,26 +7,37 @@ SESSION_NAME_FILE="$TMP_DIR/session_name.txt"
 FLOWTMUX_DIR="$HOME/.flowtmux/"
 LOG_FILE="$FLOWTMUX_DIR/log.txt"
 
+flowtmux_toggle
+
 flow_read() {
   status=$(get_status)
   current_time=$(get_time)
 
-  if [ "$status" = "in_progress" ]; then
+  # If we didn't start yet don't show anything
+  if [ -z "$status"]; then
+    return 0
+
+  elif [ "$status" = "in_progress" ]; then
     start_time=$(get_start_time)
     total_seconds=$(($current_time - $start_time))
-    printf "%sm" $((total_seconds / 60))
+    printf "⏱︎ %sm" $((total_seconds / 60))
+
   elif [ "$status" = "paused" ]; then
     printf "paused"
+
   fi
 }
 
 flow_toggle() {
   status=$(get_status)
-  if [ "$status" = "in_progress" ]; then
+  # Don't return anything is we didn't start
+  if [ "$status" = "no_status" ]; then
+    return 0
+  elif [ "$status" = "in_progress" ]; then
     flow_pause
     return 0
   elif [ -z "$status" ] || [ "$status" = "paused" ]; then
-    flow_start "new session"
+    flow_start "unknown"
     return 0
   else
     printf "Unknown status $status"
@@ -43,13 +54,20 @@ flow_start() {
 
   get_time > $START_FILE
   set_status "in_progress"
+  refresh_statusline
 }
 
 flow_pause() {
   pause_time=$(get_time)
   set_status "paused"
 
-  printf "%s\t%s\t%s" $(get_start_time) $pause_time $(get_session_name) >> $LOG_FILE
+  printf "%s\t%s\t%s\n" $(get_start_time) $pause_time $(get_session_name) >> $LOG_FILE
+  refresh_statusline
+}
+
+flow_stop() {
+  rm -rf "$TMP_DIR"
+  refresh_statusline
 }
 
 get_time() {
@@ -72,6 +90,14 @@ set_status() {
   echo "$1" > $STATUS_FILE
 }
 
+if_inside_tmux() {
+	test -n "${TMUX}"
+}
+
+refresh_statusline() {
+	if_inside_tmux && tmux refresh-client -S
+}
+
 main() {
   cmd=$1
   shift 1
@@ -80,12 +106,12 @@ main() {
     flow_start $@
   elif [ "$cmd" = "pause" ]; then
     flow_pause
-  elif [ "$cmd" = "read" ]; then
-    flow_read
   elif [ "$cmd" = "toggle" ]; then
     flow_toggle
+  elif [ "$cmd" = "stop" ]; then
+    flow_stop
   else
-    echo "Unknown command $cmd"
+    flow_read
   fi
 }
 
