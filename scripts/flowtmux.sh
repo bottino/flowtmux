@@ -3,7 +3,6 @@
 TMP_DIR="/tmp/flowtmux/"
 START_FILE="$TMP_DIR/start.txt"
 STATUS_FILE="$TMP_DIR/status.txt"
-SESSION_NAME_FILE="$TMP_DIR/session_name.txt"
 FLOWTMUX_DIR="$HOME/.flowtmux/"
 LOG_FILE="$FLOWTMUX_DIR/log.txt"
 
@@ -50,8 +49,6 @@ flow_start() {
   mkdir "$TMP_DIR"
   mkdir -p $FLOWTMUX_DIR
 
-  echo "$1" > $SESSION_NAME_FILE
-
   get_time > $START_FILE
   set_status "in_progress"
   refresh_statusline
@@ -83,7 +80,12 @@ get_status() {
 }
 
 get_session_name() {
-  cat "$SESSION_NAME_FILE"
+  if [ if_inside_tmux ]; then
+    # get the tmux session name
+    tmux display-message -p '#S'
+  else
+    cat "unknown"
+  fi
 }
 
 set_status() {
@@ -100,10 +102,9 @@ refresh_statusline() {
 
 main() {
   cmd=$1
-  shift 1
 
   if [ "$cmd" = "start" ]; then
-    flow_start $@
+    flow_start
   elif [ "$cmd" = "pause" ]; then
     flow_pause
   elif [ "$cmd" = "toggle" ]; then
