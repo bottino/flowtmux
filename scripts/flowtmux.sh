@@ -6,23 +6,22 @@ STATUS_FILE="$TMP_DIR/status.txt"
 FLOWTMUX_DIR="$HOME/.flowtmux/"
 LOG_FILE="$FLOWTMUX_DIR/log.txt"
 
-flowtmux_toggle
-
 flow_read() {
   status=$(get_status)
   current_time=$(get_time)
+  suffix="$1"
 
   # If we didn't start yet don't show anything
-  if [ -z "$status"]; then
+  if [ -z "$status" ]; then
     return 0
 
   elif [ "$status" = "in_progress" ]; then
     start_time=$(get_start_time)
     total_seconds=$(($current_time - $start_time))
-    printf "⏱︎%sm" $((total_seconds / 60))
+    printf "⏱︎ %sm%s" $((total_seconds / 60)) "$suffix"
 
   elif [ "$status" = "paused" ]; then
-    printf "paused"
+    printf "⏱︎ 󰏤%s" "$suffix"
 
   fi
 }
@@ -76,7 +75,9 @@ get_start_time() {
 }
 
 get_status() {
-  cat $STATUS_FILE
+  if [[ -f $STATUS_FILE ]]; then
+    cat $STATUS_FILE
+  fi
 }
 
 get_session_name() {
@@ -101,6 +102,19 @@ refresh_statusline() {
 }
 
 main() {
+  local suffix=""
+  local OPTIND=1
+  
+  while getopts "s:" opt; do
+    case $opt in
+      s)
+        # the suffix is useful to adapt to the statusbar style
+        suffix="$OPTARG"
+        ;;
+    esac
+  done
+  
+  shift $((OPTIND-1))
   cmd=$1
 
   if [ "$cmd" = "start" ]; then
@@ -112,8 +126,8 @@ main() {
   elif [ "$cmd" = "stop" ]; then
     flow_stop
   else
-    flow_read
+    flow_read "$suffix"
   fi
 }
 
-main $@
+main "$@"

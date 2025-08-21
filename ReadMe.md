@@ -15,7 +15,7 @@ of the pomodoro method designed to let the user reach a state of flow.
 - [ ] Automated pauses (session_time / 5)
 - [ ] Option for the length of pauses compared to session time
 - [ ] Option for minimum session time before automated pause
-- [ ] Get the name of the current tmux session as the session name
+- [x] Get the name of the current tmux session as the session name
 - [ ] At the end of a session, show a menu to discard or log the session
 - [x] Use like a tpm plugin
 
